@@ -39,6 +39,10 @@ Tem Email: {tem_email}
 Rating: {avaliacao}
 Reviews: {reviews}
 
+Evidências do Diagnóstico:
+
+{evidencias}
+
 Score Digital: {score_digital}
 Score Comercial: {score_comercial}
 
@@ -60,6 +64,18 @@ Regras:
 
 8. O campo abordagem deve ser uma frase curta e comercial.
 
+IMPORTANTE:
+
+Utilize as evidências fornecidas para justificar o problema_principal.
+
+O problema_principal deve citar fatos encontrados.
+
+Exemplo:
+
+"Ausência de Instagram e Email, apesar de possuir website e boa reputação local."
+
+Evite diagnósticos genéricos.
+
 Regras de pontuação:
 
 10 = Sem site.
@@ -74,11 +90,11 @@ Regras de pontuação:
 
 Responda SOMENTE com JSON válido:
 
-{{
+{
     "score_oportunidade": 0,
     "problema_principal": "",
     "abordagem": ""
-}}
+}
 """
 
 
@@ -96,6 +112,7 @@ def analyze_lead(lead):
         tem_email=lead.get("tem_email"),
         avaliacao=lead.get("avaliacao"),
         reviews=lead.get("reviews"),
+        evidencias=lead.get("evidencias"),
         score_digital=lead.get("score_digital"),
         score_comercial=lead.get("score_comercial")
     )
