@@ -14,11 +14,26 @@ from app.services.csv_service import save_csv
 
 def main():
 
-    raw_data = search_businesses(
-        niche="gráfica",
-        city="São Paulo",
-        limit=2
-    )
+    raw_data = []
+
+    nichos = [
+        "implantodontia",
+        "Clinica de Estetica",
+        "Harmonizacao Facial"
+        "Imobiliaria"
+        "Energia Solar"
+        "Advogado trabalhista"
+    ]
+
+    for nicho in nichos:
+
+        dados = search_businesses(
+            niche=nicho,
+            city="São Paulo",
+            limit=8
+        )
+
+        raw_data.extend(dados)
 
     leads = process_leads(raw_data)
 
