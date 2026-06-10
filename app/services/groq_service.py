@@ -3,80 +3,81 @@ import json
 from groq import Groq
 from app.config.settings import GROQ_API_KEY
 
+
 client = Groq(
     api_key="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"
 )
 
+
 PROMPT = """
 Você é um analista comercial sênior especializado em prospecção B2B para agências de marketing digital.
 
-Sua missão é identificar oportunidades comerciais em empresas locais com base na presença digital delas.
+Sua missão é identificar oportunidades comerciais em empresas locais.
+
+IMPORTANTE:
+
+Score Digital representa a maturidade digital atual da empresa.
+
+Score Comercial representa o potencial financeiro e probabilidade de contratação de serviços.
+
+Empresas com Score Comercial alto são mais interessantes para agências, mesmo que tenham uma presença digital razoável.
 
 Analise os dados abaixo:
 
 Empresa: {empresa}
 Categoria: {categoria}
+
 Website: {website}
 Instagram: {instagram}
 Email: {email}
+
 Tem Site: {tem_site}
 Tem WhatsApp: {tem_whatsapp}
 Tem Instagram: {tem_instagram}
 Tem Email: {tem_email}
+
 Rating: {avaliacao}
 Reviews: {reviews}
-Score Técnico: {score}
+
+Score Digital: {score_digital}
+Score Comercial: {score_comercial}
 
 Regras:
 
 1. Gere um score_oportunidade de 1 a 10.
 
-2. Empresas sem site devem receber notas altas.
+2. Considere principalmente o potencial comercial da empresa.
 
-3. Empresas sem WhatsApp, Instagram ou Email devem receber notas mais altas.
+3. Empresas com Score Comercial alto podem receber oportunidades maiores mesmo possuindo site.
 
-4. Empresas com menos de 50 reviews devem receber notas mais altas.
+4. Empresas sem site continuam sendo oportunidades fortes.
 
-5. Empresas com rating abaixo de 4.0 devem receber notas mais altas.
+5. Empresas com poucos reviews continuam sendo oportunidades fortes.
 
-6. Empresas com presença digital completa devem receber notas baixas.
+6. Empresas sem Instagram, WhatsApp ou Email possuem oportunidades moderadas.
 
-7. O campo problema_principal deve identificar a principal deficiência digital da empresa de forma objetiva e comercial.
+7. O campo problema_principal deve identificar a principal deficiência digital.
 
-8. O campo abordagem deve ser uma frase curta e persuasiva para iniciar uma conversa comercial.
-
-
+8. O campo abordagem deve ser uma frase curta e comercial.
 
 Regras de pontuação:
 
-10 = Não possui website.
+10 = Sem site.
 
-8-9 = Website muito fraco ou menos de 20 reviews.
+8-9 = Potencial comercial alto e presença digital fraca.
 
-6-7 = Possui site, mas tem menos de 50 reviews ou rating abaixo de 4.0.
+6-7 = Potencial comercial médio com falhas digitais.
 
-4-5 = Possui site e boa reputação, mas falta Instagram, WhatsApp ou Email.
+4-5 = Boa presença digital mas ainda existe oportunidade.
 
-1-3 = Possui site, WhatsApp, boa reputação e mais de 100 reviews.
-
-O website é o fator mais importante.
-Reviews são o segundo fator mais importante.
-Instagram e Email possuem peso menor.
-
-IMPORTANTE:
-
-Uma empresa NÃO pode receber score acima de 5 apenas por não possuir Instagram ou Email.
-
-Empresas com mais de 100 reviews e rating acima de 4.5 raramente devem receber score acima de 5, exceto se não possuírem website.
-
-
+1-3 = Presença digital forte e poucas oportunidades claras.
 
 Responda SOMENTE com JSON válido:
 
 {{
-  "score_oportunidade": 0,
-  "problema_principal": "",
-  "abordagem": ""
+    "score_oportunidade": 0,
+    "problema_principal": "",
+    "abordagem": ""
 }}
 """
 
@@ -95,7 +96,8 @@ def analyze_lead(lead):
         tem_email=lead.get("tem_email"),
         avaliacao=lead.get("avaliacao"),
         reviews=lead.get("reviews"),
-        score=lead.get("score")
+        score_digital=lead.get("score_digital"),
+        score_comercial=lead.get("score_comercial")
     )
 
     response = client.chat.completions.create(
