@@ -20,6 +20,12 @@ Categoria: {categoria}
 Problema Principal:
 {problema_principal}
 
+Impacto:
+{impacto}
+
+Oportunidade:
+{oportunidade}
+
 Serviço Recomendado:
 {servico_recomendado}
 
@@ -32,15 +38,30 @@ Regras:
 
 2. Não invente problemas que não existam.
 
-3. Se a prioridade for "Baixa", informe claramente que a empresa possui presença digital consolidada e poucas oportunidades comerciais.
+3. Utilize o Problema, Impacto e Oportunidade para construir a análise.
 
-4. Se a prioridade for "Média" ou "Alta", destaque a principal deficiência digital identificada.
+4. Se a prioridade for "Baixa", informe claramente que a empresa possui presença digital consolidada e poucas oportunidades comerciais.
 
-5. O resumo_comercial deve ter no máximo 3 frases.
+5. Se a prioridade for "Média" ou "Alta", destaque a principal oportunidade identificada.
 
-6. O motivo_indicacao deve explicar exatamente por que uma agência deveria abordar este lead.
+6. O resumo_comercial deve ter no máximo 3 frases.
 
-7. Se a prioridade for "Baixa", explique que o lead possui baixo potencial comercial no momento.
+7. O motivo_indicacao deve explicar exatamente por que uma agência deveria abordar este lead.
+
+8. Se a prioridade for "Baixa", explique que o lead possui baixo potencial comercial no momento.
+
+Crie:
+
+1. Resumo Comercial
+
+Explique:
+- Problema
+- Impacto
+- Oportunidade
+
+2. Motivo da Indicação
+
+Explique por que uma agência deveria priorizar este lead.
 
 Responda SOMENTE com JSON válido:
 
@@ -57,6 +78,8 @@ def generate_agency_report(lead):
         empresa=lead.get("empresa"),
         categoria=lead.get("categoria"),
         problema_principal=lead.get("problema_principal"),
+        impacto=lead.get("impacto"),
+        oportunidade=lead.get("oportunidade"),
         servico_recomendado=lead.get("servico_recomendado"),
         prioridade=lead.get("prioridade")
     )

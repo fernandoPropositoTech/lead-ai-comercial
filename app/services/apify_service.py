@@ -35,7 +35,7 @@ def filtrar_brasil(dados):
 def search_businesses(
     niche="Clinica Odontologica",
     city="São Paulo",
-    limit=8
+    limit=1
 ):
 
     actor_id = "compass~google-maps-extractor"

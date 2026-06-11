@@ -60,21 +60,49 @@ Regras:
 
 6. Empresas sem Instagram, WhatsApp ou Email possuem oportunidades moderadas.
 
-7. O campo problema_principal deve identificar a principal deficiência digital.
+7. Gere um problema principal.
 
-8. O campo abordagem deve ser uma frase curta e comercial.
+8. Gere um impacto comercial.
+
+9. Gere uma oportunidade comercial.
+
+10. Gere uma abordagem comercial.
+
+Definições:
+
+Problema:
+Deficiência encontrada na empresa.
+
+Impacto:
+Como esse problema prejudica geração de clientes, vendas ou autoridade.
+
+Oportunidade:
+Qual serviço resolveria esse problema.
+
+Abordagem:
+Frase curta para iniciar uma conversa comercial.
 
 IMPORTANTE:
 
-Utilize as evidências fornecidas para justificar o problema_principal.
+Utilize as evidências fornecidas para justificar o diagnóstico.
 
 O problema_principal deve citar fatos encontrados.
 
+Evite diagnósticos genéricos.
+
 Exemplo:
 
-"Ausência de Instagram e Email, apesar de possuir website e boa reputação local."
+Problema:
+A empresa possui apenas 18 avaliações e não possui Instagram.
 
-Evite diagnósticos genéricos.
+Impacto:
+Perde credibilidade e reduz a geração de novos clientes.
+
+Oportunidade:
+Gestão de Google Meu Negócio e Social Media.
+
+Abordagem:
+Podemos ajudar sua empresa a aumentar visibilidade e gerar mais oportunidades.
 
 Regras de pontuação:
 
@@ -90,11 +118,15 @@ Regras de pontuação:
 
 Responda SOMENTE com JSON válido:
 
-{
+Responda SOMENTE com JSON válido:
+
+{{
     "score_oportunidade": 0,
     "problema_principal": "",
+    "impacto": "",
+    "oportunidade": "",
     "abordagem": ""
-}
+}}
 """
 
 
@@ -151,6 +183,14 @@ def analyze_lead(lead):
             "problema_principal"
         )
 
+        lead["impacto"] = analysis.get(
+            "impacto"
+        )
+
+        lead["oportunidade"] = analysis.get(
+            "oportunidade"
+        )
+
         lead["abordagem"] = analysis.get(
             "abordagem"
         )
@@ -162,6 +202,8 @@ def analyze_lead(lead):
 
         lead["score_oportunidade"] = None
         lead["problema_principal"] = None
+        lead["impacto"] = None
+        lead["oportunidade"] = None
         lead["abordagem"] = None
 
     return lead

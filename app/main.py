@@ -21,7 +21,7 @@ def main():
         "implantodontia",
         "Clinica de Estetica",
         "Harmonizacao Facial",
-        "Imobiliaria",
+        "Ecommerce",
         "Energia Solar",
         "Advogado Trabalhista"
     ]
@@ -31,7 +31,7 @@ def main():
         dados = search_businesses(
             niche=nicho,
             city="São Paulo",
-            limit=8
+            limit=1
         )
 
         raw_data.extend(dados)
