@@ -20,4 +20,12 @@ def save_leads(leads):
     if not leads:
         return
 
-    supabase.table("leads").insert(leads).execute()
+    (
+        supabase
+        .table("leads")
+        .upsert(
+            leads,
+            on_conflict="website"
+        )
+        .execute()
+    )

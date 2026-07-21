@@ -4,77 +4,59 @@ from groq import Groq
 from app.config.settings import GROQ_API_KEY
 
 client = Groq(
-    api_key="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"
+     api_key="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"
 )
 
 PROMPT = """
 Você é um analista comercial sênior especializado em prospecção B2B para agências de marketing digital.
 
-Sua missão é identificar oportunidades comerciais em empresas locais com base na presença digital delas.
+A Signalia já analisou este lead.
 
-Analise os dados abaixo:
+Sua função NÃO é calcular score.
+
+Sua função é apenas explicar o diagnóstico produzido pela Signalia.
+
+Dados da empresa:
 
 Empresa: {empresa}
 Categoria: {categoria}
 Website: {website}
 Instagram: {instagram}
 Email: {email}
+
 Tem Site: {tem_site}
 Tem WhatsApp: {tem_whatsapp}
 Tem Instagram: {tem_instagram}
 Tem Email: {tem_email}
-Rating: {avaliacao}
+
+Avaliação: {avaliacao}
 Reviews: {reviews}
+
 Score Técnico: {score}
+Score Comercial: {score_comercial}
+Ranking Comercial: {ranking}
 
-Regras:
+Opportunity Score: {opportunity_score}
 
-1. Gere um score_oportunidade de 1 a 10.
+Diagnóstico da Signalia:
 
-2. Empresas sem site devem receber notas altas.
+{diagnostico}
 
-3. Empresas sem WhatsApp, Instagram ou Email devem receber notas mais altas.
+Resumo do Opportunity Engine:
 
-4. Empresas com menos de 50 reviews devem receber notas mais altas.
-
-5. Empresas com rating abaixo de 4.0 devem receber notas mais altas.
-
-6. Empresas com presença digital completa devem receber notas baixas.
-
-7. O campo problema_principal deve identificar a principal deficiência digital da empresa de forma objetiva e comercial.
-
-8. O campo abordagem deve ser uma frase curta e persuasiva para iniciar uma conversa comercial.
-
-
-
-Regras de pontuação:
-
-10 = Não possui website.
-
-8-9 = Website muito fraco ou menos de 20 reviews.
-
-6-7 = Possui site, mas tem menos de 50 reviews ou rating abaixo de 4.0.
-
-4-5 = Possui site e boa reputação, mas falta Instagram, WhatsApp ou Email.
-
-1-3 = Possui site, WhatsApp, boa reputação e mais de 100 reviews.
-
-O website é o fator mais importante.
-Reviews são o segundo fator mais importante.
-Instagram e Email possuem peso menor.
+{opportunity_explanation}
 
 IMPORTANTE:
 
-Uma empresa NÃO pode receber score acima de 5 apenas por não possuir Instagram ou Email.
+Não invente problemas diferentes.
 
-Empresas com mais de 100 reviews e rating acima de 4.5 raramente devem receber score acima de 5, exceto se não possuírem website.
+Utilize obrigatoriamente o diagnóstico acima.
 
-
+Explique o motivo comercial de forma objetiva.
 
 Responda SOMENTE com JSON válido:
 
 {{
-  "score_oportunidade": 0,
   "problema_principal": "",
   "abordagem": ""
 }}
@@ -95,7 +77,12 @@ def analyze_lead(lead):
         tem_email=lead.get("tem_email"),
         avaliacao=lead.get("avaliacao"),
         reviews=lead.get("reviews"),
-        score=lead.get("score")
+        score=lead.get("score"),
+        score_comercial=lead.get("score_comercial"),
+        ranking=lead.get("ranking_comercial"),
+        opportunity_score=lead.get("opportunity_score"),
+        diagnostico=", ".join(lead.get("diagnostico", [])),
+        opportunity_explanation=lead.get("opportunity_explanation")
     )
 
     response = client.chat.completions.create(
@@ -124,10 +111,6 @@ def analyze_lead(lead):
 
         analysis = json.loads(content)
 
-        lead["score_oportunidade"] = analysis.get(
-            "score_oportunidade"
-        )
-
         lead["problema_principal"] = analysis.get(
             "problema_principal"
         )
@@ -141,7 +124,6 @@ def analyze_lead(lead):
         print("ERRO:", e)
         print(content)
 
-        lead["score_oportunidade"] = None
         lead["problema_principal"] = None
         lead["abordagem"] = None
 

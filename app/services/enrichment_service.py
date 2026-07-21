@@ -1,15 +1,23 @@
-import requests
 from bs4 import BeautifulSoup
+
+from app.services.enrichment.html_fetcher import fetch_html
+from app.services.enrichment.website_detector import has_website
+from app.services.enrichment.whatsapp_detector import detect_whatsapp
+from app.services.enrichment.instagram_detector import detect_instagram
+from app.services.enrichment.email_detector import detect_email
 
 
 def enrich_lead(lead):
 
     website = lead.get("website")
 
+    # Website
+    lead = has_website(lead)
+
+    # Inicializa campos
     lead["instagram"] = None
     lead["email"] = None
 
-    lead["tem_site"] = bool(website)
     lead["tem_whatsapp"] = False
     lead["tem_instagram"] = False
     lead["tem_email"] = False
@@ -19,35 +27,44 @@ def enrich_lead(lead):
 
     try:
 
-        response = requests.get(
-            website,
-            timeout=10,
-            headers={
-                "User-Agent": "Mozilla/5.0"
-            }
+        html = fetch_html(
+            website
         )
 
-        html = response.text
+        if not html:
+            return lead
 
-        if "whatsapp" in html.lower():
-            lead["tem_whatsapp"] = True
+        # Salva o HTML para os próximos motores
+        
 
-        soup = BeautifulSoup(html, "html.parser")
+        # WhatsApp
+        lead = detect_whatsapp(
+            lead,
+            html
+        )
 
-        for link in soup.find_all("a", href=True):
+        soup = BeautifulSoup(
+            html,
+            "html.parser"
+        )
 
-            href = link["href"]
+        # Instagram
+        lead = detect_instagram(
+            lead,
+            soup
+        )
 
-            if "instagram.com" in href:
-                lead["instagram"] = href
-                lead["tem_instagram"] = True
+        # Email
+        lead = detect_email(
+            lead,
+            soup
+        )
 
-            if "mailto:" in href:
-                lead["email"] = href.replace("mailto:", "")
-                lead["tem_email"] = True
+    except Exception as e:
 
-    except Exception:
-        pass
+        print(
+            f"Erro ao enriquecer {website}: {e}"
+        )
 
     return lead
 
@@ -57,8 +74,9 @@ def enrich_leads(leads):
     enriched = []
 
     for lead in leads:
-        enriched.append(
-            enrich_lead(lead)
-        )
+
+        lead = enrich_lead(lead)
+
+        enriched.append(lead)
 
     return enriched

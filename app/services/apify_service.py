@@ -4,9 +4,9 @@ from app.config.settings import APIFY_TOKEN
 
 
 def search_businesses(
-    niche="gráfica",
-    city="São Paulo",
-    limit=2
+    niche="Dentista",
+    city="Campinas",
+    limit=1
 ):
     actor_id = "compass~google-maps-extractor"
 
@@ -24,11 +24,17 @@ def search_businesses(
         "language": "pt-BR"
     }
 
+    print("Executando busca no Apify...")
+    print(f"Pesquisa: {niche} em {city}")
+
     response = requests.post(
         url,
-        json=payload
+        json=payload,
+        timeout=300  # aguarda até 5 minutos
     )
 
     response.raise_for_status()
+
+    print("Busca concluída.")
 
     return response.json()

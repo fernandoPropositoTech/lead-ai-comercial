@@ -1,60 +1,40 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class LeadModel:
 
-    @staticmethod
-    def create():
+    empresa: str = None
+    categoria: str = None
 
-        return {
+    cidade: str = None
+    estado: str = None
 
-            # Dados básicos
-            "empresa": None,
-            "categoria": None,
-            "cidade": None,
-            "estado": None,
-            "telefone": None,
-            "website": None,
-            "instagram": None,
-            "email": None,
+    telefone: str = None
 
-            # Google
-            "avaliacao": 0,
-            "reviews": 0,
+    website: str = None
+    instagram: str = None
+    email: str = None
 
-            # Presença digital
-            "tem_site": False,
-            "tem_whatsapp": False,
-            "tem_instagram": False,
-            "tem_email": False,
+    avaliacao: float = 0
+    reviews: int = 0
 
-            # Enriquecimento
-            "html": None,
-            "trafego_pago": False,
+    tem_site: bool = False
+    tem_whatsapp: bool = False
+    tem_instagram: bool = False
+    tem_email: bool = False
 
-            # Scores
-            "score": 0,
-            "score_digital": 0,
-            "score_comercial": 0,
-            "score_final": 0,
-            "score_oportunidade": 0,
-            "digital_maturity_score": 0,
+    score: int = 0
 
-            # Digital Maturity
-            "digital_scores": {},
-            "gaps": [],
-            "gap_priorities": {},
+    score_oportunidade: int = 0
 
-            # Recomendação
-            "servico_recomendado": None,
-            "prioridade": None,
+    problema_principal: str = None
+    abordagem: str = None
 
-            # IA
-            "problema_principal": None,
-            "abordagem": None,
-            "resumo_comercial": None,
-            "motivo_indicacao": None,
+    servico_recomendado: str = None
+    prioridade: str = None
 
-            # Ranking
-            "ranking_comercial": None,
+    resumo_comercial: str = None
+    motivo_indicacao: str = None
 
-            # Qualificação
-            "qualificado": False
-        }
+    qualificado: bool = False
