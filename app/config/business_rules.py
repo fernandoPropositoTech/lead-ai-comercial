@@ -1,0 +1,24 @@
+# Ranking Comercial
+
+RANKING_HIGH = 80
+RANKING_MEDIUM = 60
+RANKING_LOW = 40
+
+
+# Pesos
+
+WEIGHT_HIGH = 40
+WEIGHT_MEDIUM = 30
+WEIGHT_LOW = 20
+WEIGHT_MINIMUM = 10
+
+
+# Reviews
+
+MIN_REVIEWS = 50
+
+
+# Qualification
+
+MIN_OPPORTUNITY = 60
+MIN_RANKING = 60

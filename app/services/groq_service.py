@@ -3,9 +3,11 @@ import json
 from groq import Groq
 from app.config.settings import GROQ_API_KEY
 
+
 client = Groq(
-     api_key="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"
+    api_key=GROQ_API_KEY
 )
+
 
 PROMPT = """
 Você é um analista comercial sênior especializado em prospecção B2B para agências de marketing digital.
@@ -81,12 +83,16 @@ def analyze_lead(lead):
         score_comercial=lead.get("score_comercial"),
         ranking=lead.get("ranking_comercial"),
         opportunity_score=lead.get("opportunity_score"),
-        diagnostico=", ".join(lead.get("diagnostico", [])),
-        opportunity_explanation=lead.get("opportunity_explanation")
+        diagnostico=", ".join(
+            lead.get("diagnostico", [])
+        ),
+        opportunity_explanation=lead.get(
+            "opportunity_explanation"
+        )
     )
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-20b",
         messages=[
             {
                 "role": "user",

@@ -5,7 +5,7 @@ from app.config.settings import GROQ_API_KEY
 
 
 client = Groq(
-    api_key="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"
+    api_key=GROQ_API_KEY
 )
 
 
@@ -62,7 +62,7 @@ def generate_agency_report(lead):
     )
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-20b",
         messages=[
             {
                 "role": "user",

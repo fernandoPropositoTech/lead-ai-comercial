@@ -16,6 +16,28 @@ from app.services.scoring.ranking_score import (
 )
 
 
+def normalize_score(value):
+
+    if value is None:
+        return 0
+
+    try:
+        value = float(value)
+
+    except (TypeError, ValueError):
+        return 0
+
+    value = max(
+        0,
+        min(value, 100)
+    )
+
+    if value.is_integer():
+        return int(value)
+
+    return value
+
+
 def calculate_score(lead):
 
     score = 0
@@ -25,17 +47,41 @@ def calculate_score(lead):
     score += score_instagram(lead)
     score += score_reviews(lead)
 
-    # Score legado
-    lead["score"] = score
+    lead["score"] = normalize_score(
+        score
+    )
 
-    # Score Digital
-    calculate_digital_score(lead)
+    calculate_digital_score(
+        lead
+    )
 
-    # Score Comercial
-    calculate_commercial_score(lead)
+    calculate_commercial_score(
+        lead
+    )
 
-    # Ranking Final
-    calculate_ranking(lead)
+    calculate_ranking(
+        lead
+    )
+
+    lead["website_score"] = normalize_score(
+        lead.get("website_score")
+    )
+
+    lead["email_score"] = normalize_score(
+        lead.get("email_score")
+    )
+
+    lead["score_digital"] = normalize_score(
+        lead.get("score_digital")
+    )
+
+    lead["score_comercial"] = normalize_score(
+        lead.get("score_comercial")
+    )
+
+    lead["ranking_comercial"] = normalize_score(
+        lead.get("ranking_comercial")
+    )
 
     return lead
 

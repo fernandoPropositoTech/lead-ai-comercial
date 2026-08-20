@@ -4,9 +4,9 @@ from app.config.settings import APIFY_TOKEN
 
 
 def search_businesses(
-    niche="Dentista",
-    city="Campinas",
-    limit=1
+    niche="clinica de estetica",
+    city="Sao Paulo",
+    limit=2
 ):
     actor_id = "compass~google-maps-extractor"
 

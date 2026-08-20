@@ -2,8 +2,12 @@ from app.services.opportunity.opportunity_score import (
     calculate_opportunity_score
 )
 
+from app.services.opportunity.confidence_engine import (
+    calculate_confidence
+)
+
 from app.services.opportunity.diagnosis_engine import (
-    generate_diagnosis
+    build_diagnosis
 )
 
 from app.services.opportunity.explain_opportunity import (
@@ -11,15 +15,55 @@ from app.services.opportunity.explain_opportunity import (
 )
 
 
+def normalize_score(value):
+
+    if value is None:
+        return 0
+
+    try:
+        value = float(value)
+
+    except (TypeError, ValueError):
+        return 0
+
+    value = max(
+        0,
+        min(value, 100)
+    )
+
+    if value.is_integer():
+        return int(value)
+
+    return value
+
+
 def calculate_opportunity(lead):
 
-    # 1 - Calcula Opportunity Score
-    calculate_opportunity_score(lead)
+    calculate_opportunity_score(
+        lead
+    )
 
-    # 2 - Gera diagnóstico estruturado
-    generate_diagnosis(lead)
+    lead["opportunity_score"] = normalize_score(
+        lead.get("opportunity_score")
+    )
 
-    # 3 - Gera explicação textual
-    explain_opportunity(lead)
+    confidence = calculate_confidence(
+        lead
+    )
+
+    confidence = normalize_score(
+        confidence
+    )
+
+    lead["confidence"] = confidence
+
+    lead["diagnostico"] = build_diagnosis(
+        lead,
+        confidence
+    )
+
+    explain_opportunity(
+        lead
+    )
 
     return lead

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -14,6 +14,11 @@ class LeadModel:
 
     website: str = None
     instagram: str = None
+    facebook: str = None
+    linkedin: str = None
+    youtube: str = None
+    tiktok: str = None
+
     email: str = None
 
     avaliacao: float = 0
@@ -26,7 +31,15 @@ class LeadModel:
 
     score: int = 0
 
-    score_oportunidade: int = 0
+    website_score: int = 0
+    email_score: int = 0
+
+    score_digital: int = 0
+    score_comercial: int = 0
+    ranking_comercial: int = 0
+
+    opportunity_score: int = 0
+    confidence: int = 0
 
     problema_principal: str = None
     abordagem: str = None
@@ -38,3 +51,9 @@ class LeadModel:
     motivo_indicacao: str = None
 
     qualificado: bool = False
+
+    diagnostico: list = field(
+        default_factory=list
+    )
+
+    opportunity_explanation: str = None

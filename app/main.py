@@ -20,9 +20,9 @@ def main():
 
     print("1 - Buscando empresas...")
     raw_data = search_businesses(
-        niche="Dentista",
-        city="Campinas",
-        limit=1
+        niche="clinica de estetica",
+        city="Sao Paulo",
+        limit=2
     )
 
     print("2 - Processando...")
