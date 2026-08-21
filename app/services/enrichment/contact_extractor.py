@@ -29,7 +29,7 @@ WHATSAPP_PATTERNS = [
 
     r"https?://web\.whatsapp\.com",
 
-    r"whatsapp"
+    r"whatsapp://send",
 
 ]
 
@@ -46,22 +46,24 @@ def normalize_phone(phone):
         phone
     )
 
-    # Remove código do Brasil quando realmente estiver presente
-    if digits.startswith("55") and len(digits) > 11:
+    # Remove código do Brasil (+55)
+    if (
+        digits.startswith("55")
+        and len(digits) > 11
+    ):
         digits = digits[2:]
-
-    # ----------------------------------
-    # PLACEHOLDERS ÓBVIOS
-    # ----------------------------------
 
     if not digits:
         return None
 
-    # Ex.: 99999999999, 00000000000
+    # ----------------------------------
+    # PLACEHOLDERS
+    # ----------------------------------
+
+    # Ex.: 99999999999 / 00000000000
     if len(set(digits)) == 1:
         return None
 
-    # Ex.: 11999999999
     if len(digits) >= 8:
 
         suffix = digits[-8:]
@@ -70,7 +72,7 @@ def normalize_phone(phone):
             return None
 
     # ----------------------------------
-    # TELEFONE COM DDD
+    # TELEFONE FIXO COM DDD
     # ----------------------------------
 
     if len(digits) == 10:
@@ -86,6 +88,11 @@ def normalize_phone(phone):
     # ----------------------------------
 
     if len(digits) == 11:
+
+        # Celular brasileiro deve começar
+        # com 9 depois do DDD
+        if digits[2] != "9":
+            return None
 
         return (
             f"({digits[:2]}) "
@@ -104,7 +111,6 @@ def normalize_phone(phone):
             f"{digits[4:]}"
         )
 
-    # Número inválido ou incompleto
     return None
 
 
@@ -151,36 +157,6 @@ def extract_contacts(html: str):
             print("EMAIL REJEITADO")
 
     # ----------------------------------
-    # TELEFONE
-    # ----------------------------------
-
-    phone_match = re.search(
-        PHONE_PATTERN,
-        html
-    )
-
-    if phone_match:
-
-        raw_phone = phone_match.group(0)
-
-        phone = normalize_phone(
-            raw_phone
-        )
-
-        print("\n==============================")
-        print("TELEFONE")
-        print("==============================")
-        print("RAW         :", raw_phone)
-        print("NORMALIZADO :", phone)
-
-    else:
-
-        print("\n==============================")
-        print("TELEFONE")
-        print("==============================")
-        print("NENHUM TELEFONE ENCONTRADO")
-
-    # ----------------------------------
     # WHATSAPP
     # ----------------------------------
 
@@ -193,7 +169,93 @@ def extract_contacts(html: str):
         ):
 
             whatsapp = True
+
             break
+
+    # ----------------------------------
+    # REMOVE LINKS DE WHATSAPP
+    # ANTES DE PROCURAR TELEFONE
+    # ----------------------------------
+
+    html_without_whatsapp_links = re.sub(
+        r"https?://wa\.me/\d+",
+        "",
+        html,
+        flags=re.IGNORECASE
+    )
+
+    html_without_whatsapp_links = re.sub(
+        r"https?://api\.whatsapp\.com/send\?phone=\d+",
+        "",
+        html_without_whatsapp_links,
+        flags=re.IGNORECASE
+    )
+
+    html_without_whatsapp_links = re.sub(
+        r"whatsapp://send[^\s\"']*",
+        "",
+        html_without_whatsapp_links,
+        flags=re.IGNORECASE
+    )
+
+    # ----------------------------------
+    # TELEFONE
+    # ----------------------------------
+
+    phone_matches = re.findall(
+        PHONE_PATTERN,
+        html_without_whatsapp_links
+    )
+
+    print("\n==============================")
+    print("TELEFONES ENCONTRADOS")
+    print("==============================")
+    print(phone_matches)
+
+    for raw_phone in phone_matches:
+
+        digits = re.sub(
+            r"\D",
+            "",
+            raw_phone
+        )
+
+        if (
+            digits.startswith("55")
+            and len(digits) > 11
+        ):
+            digits = digits[2:]
+
+        # No HTML bruto só confiamos
+        # em telefone com DDD
+        if len(digits) not in (10, 11):
+            continue
+
+        normalized = normalize_phone(
+            raw_phone
+        )
+
+        if normalized:
+
+            phone = normalized
+
+            print(
+                "RAW         :",
+                raw_phone
+            )
+
+            print(
+                "NORMALIZADO :",
+                phone
+            )
+
+            break
+
+    if not phone:
+
+        print(
+            "NENHUM TELEFONE CONFIÁVEL ENCONTRADO"
+        )
 
     # ----------------------------------
     # RESULTADO

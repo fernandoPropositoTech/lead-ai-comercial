@@ -33,5 +33,7 @@ PLACEHOLDER_EMAILS = {
     "nome@email.com",
     "teste@teste.com",
     "test@test.com",
+    "john@doe.com",
+    "jane@doe.com",
 
 }
