@@ -1,10 +1,22 @@
 def qualifies(lead):
 
-    opportunity = lead.get("opportunity_score", 0)
+    opportunity = lead.get(
+        "opportunity_score",
+        0
+    )
 
-    ranking = lead.get("ranking_comercial", 0)
+    ranking = lead.get(
+        "ranking_comercial",
+        0
+    )
+
+    confidence = lead.get(
+        "confidence",
+        0
+    )
 
     return (
         opportunity >= 60
         and ranking >= 60
+        and confidence >= 50
     )
