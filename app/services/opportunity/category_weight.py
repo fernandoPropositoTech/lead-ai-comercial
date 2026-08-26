@@ -1,20 +1,15 @@
+from app.config.business_rules import PRIORITY_SEGMENTS
+
+
 def category_weight(lead):
 
-    categoria = (lead.get("categoria") or "").lower()
+    categoria = (
+        lead.get("categoria") or ""
+    ).lower()
 
-    categorias_prioritarias = [
-        "clínica",
-        "dentista",
-        "psicólogo",
-        "escritório de contabilidade",
-        "advogado",
-        "imobiliária",
-        "academia"
-    ]
+    for segment in PRIORITY_SEGMENTS:
 
-    for item in categorias_prioritarias:
-
-        if item in categoria:
+        if segment in categoria:
             return 10
 
     return 0

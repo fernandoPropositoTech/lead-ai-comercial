@@ -5,6 +5,7 @@ from app.processors.lead_processor import process_leads
 
 from app.services.enrichment_service import enrich_leads
 from app.services.scoring_service import score_leads
+from app.services.fit.fit_score import calculate_fit_score
 from app.services.opportunity_service import calculate_opportunity
 
 from app.services.groq_service import analyze_lead
@@ -18,49 +19,149 @@ from app.services.csv_service import save_csv
 
 def main():
 
-    print("1 - Buscando empresas...")
+    print("\n========================================")
+    print("SIGNALIA - PIPELINE DE INTELIGÊNCIA B2B")
+    print("========================================\n")
+
+    # ----------------------------------
+    # COLETA
+    # ----------------------------------
+
+    print("[1/7] Buscando empresas...")
+
     raw_data = search_businesses(
         niche="clinica de estetica",
         city="Sao Paulo",
         limit=2
     )
 
-    print("2 - Processando...")
-    leads = process_leads(raw_data)
+    print(
+        f"      {len(raw_data)} empresas encontradas."
+    )
 
-    print("3 - Enriquecendo...")
-    leads = enrich_leads(leads)
+    # ----------------------------------
+    # PROCESSAMENTO
+    # ----------------------------------
 
-    print("4 - Calculando score...")
-    leads = score_leads(leads)
+    print("[2/7] Processando dados...")
+
+    leads = process_leads(
+        raw_data
+    )
+
+    # ----------------------------------
+    # ENRIQUECIMENTO
+    # ----------------------------------
+
+    print("[3/7] Enriquecendo leads...")
+
+    leads = enrich_leads(
+        leads
+    )
+
+    # ----------------------------------
+    # INTELIGÊNCIA
+    # ----------------------------------
+
+    print("[4/7] Calculando inteligência comercial...")
+
+    leads = score_leads(
+        leads
+    )
 
     for lead in leads:
 
-        print("5 - Opportunity")
-        calculate_opportunity(lead)
+        # Fit comercial
+        calculate_fit_score(
+            lead
+        )
 
-        print("6 - IA")
-        analyze_lead(lead)
+        # Oportunidade
+        calculate_opportunity(
+            lead
+        )
 
-        print("7 - Recomendação")
-        recommend_service(lead)
+        # IA
+        analyze_lead(
+            lead
+        )
 
-        print("8 - Relatório")
-        generate_agency_report(lead)
+        # Recomendação
+        recommend_service(
+            lead
+        )
 
-        print("9 - Qualificação")
-        qualify_lead(lead)
+        # Qualificação
+        qualify_lead(
+            lead
+        )
 
-    print("10 - Exibindo JSON")
-    print(json.dumps(leads, indent=2, ensure_ascii=False))
+        # Relatório
+        generate_agency_report(
+            lead
+        )
 
-    print("11 - Salvando Supabase")
-    save_leads(leads)
+    # ----------------------------------
+    # RESUMO
+    # ----------------------------------
 
-    print("12 - Gerando CSV")
-    save_csv(leads)
+    print("\n========================================")
+    print("RESUMO DOS LEADS")
+    print("========================================")
 
-    print("FINALIZADO")
+    for lead in leads:
+
+        print(
+            f"\n{lead.get('empresa', 'Empresa')}"
+        )
+
+        print(
+            f"Segmento    : {lead.get('categoria')}"
+        )
+
+        print(
+            f"Fit         : {lead.get('fit_score', 0)}"
+        )
+
+        print(
+            f"Oportunidade: {lead.get('opportunity_score', 0)}"
+        )
+
+        print(
+            f"Confiança   : {lead.get('confidence', 0)}"
+        )
+
+        print(
+            f"Prioridade  : {lead.get('prioridade')}"
+        )
+
+        print(
+            f"Qualificado : {lead.get('qualificado')}"
+        )
+
+    # ----------------------------------
+    # PERSISTÊNCIA
+    # ----------------------------------
+
+    print("\n[5/7] Salvando dados...")
+
+    save_leads(
+        leads
+    )
+
+    print("[6/7] Gerando CSV...")
+
+    save_csv(
+        leads
+    )
+
+    print("[7/7] Pipeline concluído.")
+
+    print("\n========================================")
+    print(
+        f"{len(leads)} leads processados."
+    )
+    print("========================================\n")
 
 
 if __name__ == "__main__":

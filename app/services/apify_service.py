@@ -8,33 +8,72 @@ def search_businesses(
     city="Sao Paulo",
     limit=2
 ):
+
+    if not APIFY_TOKEN:
+        raise ValueError(
+            "APIFY_TOKEN não configurado."
+        )
+
     actor_id = "compass~google-maps-extractor"
 
     url = (
-        f"https://api.apify.com/v2/acts/"
+        "https://api.apify.com/v2/acts/"
         f"{actor_id}/run-sync-get-dataset-items"
-        f"?token={APIFY_TOKEN}"
     )
 
+    params = {
+        "token": APIFY_TOKEN
+    }
+
     payload = {
+
         "searchStringsArray": [
             f"{niche} em {city}"
         ],
+
         "maxCrawledPlacesPerSearch": limit,
+
         "language": "pt-BR"
     }
 
-    print("Executando busca no Apify...")
-    print(f"Pesquisa: {niche} em {city}")
+    try:
 
-    response = requests.post(
-        url,
-        json=payload,
-        timeout=300  # aguarda até 5 minutos
-    )
+        response = requests.post(
+            url,
+            params=params,
+            json=payload,
+            timeout=300
+        )
 
-    response.raise_for_status()
+        response.raise_for_status()
 
-    print("Busca concluída.")
+        data = response.json()
 
-    return response.json()
+        if not isinstance(data, list):
+            return []
+
+        return data
+
+    except requests.exceptions.Timeout:
+
+        print(
+            "Apify: tempo limite excedido."
+        )
+
+        return []
+
+    except requests.exceptions.RequestException as e:
+
+        print(
+            f"Apify: erro na requisição: {e}"
+        )
+
+        return []
+
+    except ValueError as e:
+
+        print(
+            f"Apify: resposta inválida: {e}"
+        )
+
+        return []

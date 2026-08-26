@@ -41,6 +41,8 @@ class LeadModel:
     opportunity_score: int = 0
     confidence: int = 0
 
+    fit_score: int = 0
+
     problema_principal: str = None
     abordagem: str = None
 
