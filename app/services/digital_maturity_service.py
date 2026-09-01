@@ -1,39 +1,56 @@
 from bs4 import BeautifulSoup
 
 
+# ----------------------------------
+# ESTRUTURA DO SITE
+# Máximo: 25
+# ----------------------------------
+
 def score_site(website, html):
+
+    if not website or not html:
+        return 0
 
     score = 0
     html_lower = html.lower()
 
     # HTTPS
-    if website and website.startswith("https"):
+    if website.startswith("https://"):
         score += 5
 
-    # Mobile
+    # Responsividade / mobile
     if "viewport" in html_lower:
         score += 5
 
-    # CTA
-    ctas = [
-        "fale conosco",
-        "solicite orçamento",
-        "agende",
-        "comprar",
-        "entre em contato"
-    ]
+    # Estrutura semântica básica
+    soup = BeautifulSoup(
+        html,
+        "html.parser"
+    )
 
-    if any(cta in html_lower for cta in ctas):
+    if soup.find("h1"):
+        score += 5
+
+    # Navegação
+    if soup.find("nav"):
         score += 5
 
     # Formulário
-    if "<form" in html_lower:
+    if soup.find("form"):
         score += 5
 
-    return min(score, 20)
+    return min(score, 25)
 
+
+# ----------------------------------
+# SEO BÁSICO
+# Máximo: 25
+# ----------------------------------
 
 def score_seo(html):
+
+    if not html:
+        return 0
 
     score = 0
 
@@ -43,20 +60,33 @@ def score_seo(html):
     )
 
     # Title
-    if soup.title and soup.title.text.strip():
+    if (
+        soup.title
+        and soup.title.text.strip()
+    ):
         score += 5
 
-    # Meta Description
+    # Meta description
     meta_description = soup.find(
         "meta",
         attrs={"name": "description"}
     )
 
-    if meta_description:
+    if (
+        meta_description
+        and meta_description.get("content")
+    ):
         score += 5
 
     # H1
     if soup.find("h1"):
+        score += 5
+
+    # Canonical
+    if soup.find(
+        "link",
+        attrs={"rel": "canonical"}
+    ):
         score += 5
 
     # Schema / JSON-LD
@@ -68,43 +98,94 @@ def score_seo(html):
     ):
         score += 5
 
-    return min(score, 20)
+    return min(score, 25)
 
 
-def score_social(lead):
+# ----------------------------------
+# CONVERSÃO
+# Máximo: 30
+# ----------------------------------
 
-    score = 0
+def score_conversion(html):
 
-    if lead.get("tem_instagram"):
-        score += 10
-
-    if lead.get("tem_whatsapp"):
-        score += 5
-
-    if lead.get("tem_email"):
-        score += 5
-
-    return min(score, 20)
-
-
-def score_tracking(html):
+    if not html:
+        return 0
 
     score = 0
     html_lower = html.lower()
 
-    # GTM
-    if "googletagmanager" in html_lower:
+    # CTA comercial
+    ctas = [
+        "fale conosco",
+        "entre em contato",
+        "solicite orçamento",
+        "solicite orcamento",
+        "agende",
+        "agendar",
+        "marque sua consulta",
+        "saiba mais",
+    ]
+
+    if any(
+        cta in html_lower
+        for cta in ctas
+    ):
+        score += 10
+
+    # WhatsApp real
+    whatsapp_patterns = [
+        "wa.me/",
+        "api.whatsapp.com/send",
+        "whatsapp://send",
+    ]
+
+    if any(
+        pattern in html_lower
+        for pattern in whatsapp_patterns
+    ):
+        score += 10
+
+    # Formulário
+    if "<form" in html_lower:
         score += 5
 
-    # GA
+    # Telefone clicável
+    if "tel:" in html_lower:
+        score += 5
+
+    return min(score, 30)
+
+
+# ----------------------------------
+# TRACKING / MARKETING
+# Máximo: 20
+# ----------------------------------
+
+def score_tracking(html):
+
+    if not html:
+        return 0
+
+    score = 0
+    html_lower = html.lower()
+
+    # Google Tag Manager
+    if "googletagmanager.com/gtm.js" in html_lower:
+        score += 5
+
+    # Google Analytics / GA4
     if (
-        "google-analytics" in html_lower
+        "google-analytics.com" in html_lower
         or "gtag(" in html_lower
+        or "googletagmanager.com/gtag/js" in html_lower
     ):
         score += 5
 
     # Meta Pixel
-    if "fbq(" in html_lower:
+    if (
+        "connect.facebook.net" in html_lower
+        or "fbq(" in html_lower
+    ):
         score += 5
 
     # Hotjar
@@ -114,61 +195,24 @@ def score_tracking(html):
     return min(score, 20)
 
 
-def score_conversion(html):
+# ----------------------------------
+# AUDITORIA COMPLETA
+# ----------------------------------
 
-    score = 0
-    html_lower = html.lower()
-
-    # WhatsApp CTA
-    if "whatsapp" in html_lower:
-        score += 5
-
-    # Form
-    if "<form" in html_lower:
-        score += 5
-
-    # Landing Page hints
-    landing_patterns = [
-        "landing",
-        "captura",
-        "lead"
-    ]
-
-    if any(
-        pattern in html_lower
-        for pattern in landing_patterns
-    ):
-        score += 5
-
-    # Sticky CTA
-    sticky_patterns = [
-        "sticky",
-        "fixed-bottom",
-        "floating"
-    ]
-
-    if any(
-        pattern in html_lower
-        for pattern in sticky_patterns
-    ):
-        score += 5
-
-    return min(score, 20)
-
-
-def calculate_digital_maturity(lead):
+def calculate_digital_maturity(
+    lead,
+    html=None
+):
 
     website = lead.get("website")
-    html = lead.get("html")
 
     if not website or not html:
 
         lead["digital_scores"] = {
             "site": 0,
             "seo": 0,
-            "social": 0,
+            "conversion": 0,
             "tracking": 0,
-            "conversion": 0
         }
 
         lead["digital_maturity_score"] = 0
@@ -180,30 +224,35 @@ def calculate_digital_maturity(lead):
         html
     )
 
-    seo_score = score_seo(html)
+    seo_score = score_seo(
+        html
+    )
 
-    social_score = score_social(lead)
+    conversion_score = score_conversion(
+        html
+    )
 
-    tracking_score = score_tracking(html)
-
-    conversion_score = score_conversion(html)
+    tracking_score = score_tracking(
+        html
+    )
 
     total = (
         site_score
         + seo_score
-        + social_score
-        + tracking_score
         + conversion_score
+        + tracking_score
     )
 
     lead["digital_scores"] = {
         "site": site_score,
         "seo": seo_score,
-        "social": social_score,
+        "conversion": conversion_score,
         "tracking": tracking_score,
-        "conversion": conversion_score
     }
 
-    lead["digital_maturity_score"] = total
+    lead["digital_maturity_score"] = max(
+        0,
+        min(total, 100)
+    )
 
     return lead

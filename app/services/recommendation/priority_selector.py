@@ -1,5 +1,10 @@
 def select_priority(lead):
 
+    fit = lead.get(
+        "fit_score",
+        0
+    )
+
     opportunity = lead.get(
         "opportunity_score",
         0
@@ -10,33 +15,24 @@ def select_priority(lead):
         0
     )
 
-    # ----------------------------------
-    # OPORTUNIDADE ALTA
-    # ----------------------------------
-
-    if opportunity >= 80:
-
-        if confidence >= 60:
-            return "Alta"
-
-        if confidence >= 30:
-            return "Média"
-
+    # Empresa fora do perfil comercial
+    if fit < 50:
         return "Baixa"
 
-    # ----------------------------------
-    # OPORTUNIDADE MÉDIA
-    # ----------------------------------
+    # Alta prioridade
+    if (
+        fit >= 70
+        and opportunity >= 80
+        and confidence >= 60
+    ):
+        return "Alta"
 
-    if opportunity >= 60:
-
-        if confidence >= 50:
-            return "Média"
-
-        return "Baixa"
-
-    # ----------------------------------
-    # OPORTUNIDADE BAIXA
-    # ----------------------------------
+    # Média prioridade
+    if (
+        fit >= 60
+        and opportunity >= 60
+        and confidence >= 50
+    ):
+        return "Média"
 
     return "Baixa"

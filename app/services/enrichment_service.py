@@ -31,6 +31,14 @@ from app.services.enrichment.email_score import (
     calculate_email_score
 )
 
+from app.services.digital_maturity_service import (
+    calculate_digital_maturity
+)
+
+from app.services.website_audit_service import (
+    audit_website
+)
+
 
 SOCIAL_FIELDS = {
     "instagram",
@@ -120,6 +128,10 @@ def enrich_lead(lead):
         )
         print("=" * 70)
 
+        # ----------------------------------
+        # HOME
+        # ----------------------------------
+
         home_html = fetch_html(
             website
         )
@@ -135,6 +147,10 @@ def enrich_lead(lead):
         html_bundle = [
             home_html
         ]
+
+        # ----------------------------------
+        # DESCOBERTA DE PÁGINAS
+        # ----------------------------------
 
         pages = find_internal_pages(
             website,
@@ -156,6 +172,10 @@ def enrich_lead(lead):
                 "Nenhuma página encontrada."
             )
 
+        # ----------------------------------
+        # DOWNLOAD DAS PÁGINAS
+        # ----------------------------------
+
         for page in pages:
 
             try:
@@ -174,10 +194,18 @@ def enrich_lead(lead):
 
                 pass
 
+        # ----------------------------------
+        # ACUMULADORES
+        # ----------------------------------
+
         socials = {}
         contacts = {}
 
         email_same_domain_found = False
+
+        # ----------------------------------
+        # EXTRAÇÃO
+        # ----------------------------------
 
         for index, html in enumerate(
             html_bundle,
@@ -214,6 +242,10 @@ def enrich_lead(lead):
                 )
             )
 
+            # ----------------------------------
+            # REDES SOCIAIS
+            # ----------------------------------
+
             for key, value in (
                 page_socials.items()
             ):
@@ -224,6 +256,10 @@ def enrich_lead(lead):
                 ):
 
                     socials[key] = value
+
+            # ----------------------------------
+            # E-MAIL
+            # ----------------------------------
 
             candidate_email = (
                 page_contacts.get(
@@ -274,6 +310,10 @@ def enrich_lead(lead):
                         )
                     )
 
+            # ----------------------------------
+            # OUTROS CONTATOS
+            # ----------------------------------
+
             for key, value in (
                 page_contacts.items()
             ):
@@ -290,6 +330,10 @@ def enrich_lead(lead):
                 ):
 
                     contacts[key] = value
+
+            # ----------------------------------
+            # STRUCTURED DATA
+            # ----------------------------------
 
             for key, value in (
                 page_structured.items()
@@ -351,15 +395,23 @@ def enrich_lead(lead):
 
                         contacts["telefone"] = value
 
+        # ----------------------------------
+        # DEBUG DO ENRIQUECIMENTO
+        # ----------------------------------
+
         print(
             "\nSOCIALS ACUMULADOS"
         )
-        print(socials)
+        print(
+            socials
+        )
 
         print(
             "\nCONTACTS ACUMULADOS"
         )
-        print(contacts)
+        print(
+            contacts
+        )
 
         print(
             "\nDOMÍNIO WEBSITE:"
@@ -374,6 +426,10 @@ def enrich_lead(lead):
         print(
             email_same_domain_found
         )
+
+        # ----------------------------------
+        # VALIDAÇÃO DO ENRIQUECIMENTO
+        # ----------------------------------
 
         validated = validate_enrichment(
             lead,
@@ -390,6 +446,24 @@ def enrich_lead(lead):
 
         lead.update(
             validated
+        )
+
+        # ----------------------------------
+        # WEBSITE INTELLIGENCE - SPRINT 5
+        # ----------------------------------
+
+        # Auditoria objetiva:
+        # HTTPS, mobile, CTA, formulário,
+        # SEO, tracking etc.
+        audit_website(
+            lead,
+            home_html
+        )
+
+        # Pontuação de maturidade digital
+        calculate_digital_maturity(
+            lead,
+            home_html
         )
 
     except Exception as e:

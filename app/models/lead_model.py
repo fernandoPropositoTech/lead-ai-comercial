@@ -13,6 +13,7 @@ class LeadModel:
     telefone: str = None
 
     website: str = None
+
     instagram: str = None
     facebook: str = None
     linkedin: str = None
@@ -38,10 +39,42 @@ class LeadModel:
     score_comercial: int = 0
     ranking_comercial: int = 0
 
-    opportunity_score: int = 0
-    confidence: int = 0
+    # ----------------------------------
+    # FIT COMERCIAL - SPRINT 4
+    # ----------------------------------
 
     fit_score: int = 0
+
+    # ----------------------------------
+    # WEBSITE INTELLIGENCE - SPRINT 5
+    # ----------------------------------
+
+    digital_maturity_score: int = 0
+
+    digital_scores: dict = field(
+        default_factory=dict
+    )
+
+    website_audit: dict = field(
+        default_factory=dict
+    )
+
+    website_gaps: list = field(
+        default_factory=list
+    )
+
+    website_opportunities: list = field(
+        default_factory=list
+    )
+
+    website_opportunity_score: int = 0
+
+    # ----------------------------------
+    # OPORTUNIDADE
+    # ----------------------------------
+
+    opportunity_score: int = 0
+    confidence: int = 0
 
     problema_principal: str = None
     abordagem: str = None

@@ -1,33 +1,53 @@
-import json
-
 from app.services.apify_service import search_businesses
+
 from app.processors.lead_processor import process_leads
 
 from app.services.enrichment_service import enrich_leads
+
 from app.services.scoring_service import score_leads
-from app.services.fit.fit_score import calculate_fit_score
-from app.services.opportunity_service import calculate_opportunity
+
+from app.services.fit.fit_score import (
+    calculate_fit_score
+)
+
+from app.services.opportunity_service import (
+    calculate_opportunity
+)
+
+from app.services.gap_analyzer_service import (
+    analyze_gaps
+)
 
 from app.services.groq_service import analyze_lead
-from app.services.recommendation_service import recommend_service
-from app.services.agency_report_service import generate_agency_report
-from app.services.qualification_service import qualify_lead
+
+from app.services.recommendation_service import (
+    recommend_service
+)
+
+from app.services.agency_report_service import (
+    generate_agency_report
+)
+
+from app.services.qualification_service import (
+    qualify_lead
+)
 
 from app.services.supabase_service import save_leads
+
 from app.services.csv_service import save_csv
 
 
 def main():
 
-    print("\n========================================")
-    print("SIGNALIA - PIPELINE DE INTELIGÊNCIA B2B")
-    print("========================================\n")
+    print("\n" + "=" * 55)
+    print("SIGNALIA | INTELIGÊNCIA COMERCIAL B2B")
+    print("=" * 55)
 
     # ----------------------------------
-    # COLETA
+    # 1. COLETA
     # ----------------------------------
 
-    print("[1/7] Buscando empresas...")
+    print("\n[1/6] Coletando empresas...")
 
     raw_data = search_businesses(
         niche="clinica de estetica",
@@ -35,35 +55,43 @@ def main():
         limit=2
     )
 
+    if not raw_data:
+        print("Nenhuma empresa encontrada.")
+        return
+
     print(
-        f"      {len(raw_data)} empresas encontradas."
+        f"      {len(raw_data)} empresa(s) encontrada(s)"
     )
 
     # ----------------------------------
-    # PROCESSAMENTO
+    # 2. PROCESSAMENTO
     # ----------------------------------
 
-    print("[2/7] Processando dados...")
+    print("[2/6] Processando dados...")
 
     leads = process_leads(
         raw_data
     )
 
+    if not leads:
+        print("Nenhum lead válido para processar.")
+        return
+
     # ----------------------------------
-    # ENRIQUECIMENTO
+    # 3. ENRIQUECIMENTO
     # ----------------------------------
 
-    print("[3/7] Enriquecendo leads...")
+    print("[3/6] Enriquecendo dados...")
 
     leads = enrich_leads(
         leads
     )
 
     # ----------------------------------
-    # INTELIGÊNCIA
+    # 4. INTELIGÊNCIA COMERCIAL
     # ----------------------------------
 
-    print("[4/7] Calculando inteligência comercial...")
+    print("[4/6] Analisando oportunidades...")
 
     leads = score_leads(
         leads
@@ -71,97 +99,172 @@ def main():
 
     for lead in leads:
 
-        # Fit comercial
+        # Fit com o ICP da agência
         calculate_fit_score(
             lead
         )
 
-        # Oportunidade
+        # Opportunity Score
         calculate_opportunity(
             lead
         )
 
-        # IA
+        # Evidências técnicas do website
+        analyze_gaps(
+            lead
+        )
+
+        # IA explica as evidências
         analyze_lead(
             lead
         )
 
-        # Recomendação
+        # Serviço recomendado
         recommend_service(
             lead
         )
 
-        # Qualificação
+        # Classificação final
         qualify_lead(
             lead
         )
 
-        # Relatório
+        # Relatório comercial
         generate_agency_report(
             lead
         )
 
     # ----------------------------------
-    # RESUMO
+    # 5. RESULTADO
     # ----------------------------------
 
-    print("\n========================================")
-    print("RESUMO DOS LEADS")
-    print("========================================")
+    print("\n" + "=" * 55)
+    print("RESULTADO")
+    print("=" * 55)
 
-    for lead in leads:
+    for index, lead in enumerate(
+        leads,
+        start=1
+    ):
 
         print(
-            f"\n{lead.get('empresa', 'Empresa')}"
+            f"\n[{index}] "
+            f"{lead.get('empresa', 'Empresa')}"
         )
 
         print(
-            f"Segmento    : {lead.get('categoria')}"
+            f"    Segmento     : "
+            f"{lead.get('categoria') or '-'}"
         )
 
         print(
-            f"Fit         : {lead.get('fit_score', 0)}"
+            f"    Cidade       : "
+            f"{lead.get('cidade') or '-'}"
         )
 
         print(
-            f"Oportunidade: {lead.get('opportunity_score', 0)}"
+            f"    Fit          : "
+            f"{lead.get('fit_score', 0)}/100"
         )
 
         print(
-            f"Confiança   : {lead.get('confidence', 0)}"
+            f"    Maturidade   : "
+            f"{lead.get('digital_maturity_score', 0)}/100"
+        )
+
+        digital_scores = (
+            lead.get("digital_scores")
+            or {}
         )
 
         print(
-            f"Prioridade  : {lead.get('prioridade')}"
+            "    Auditoria    : "
+            f"Site {digital_scores.get('site', 0)}/25 | "
+            f"SEO {digital_scores.get('seo', 0)}/25 | "
+            f"Conversão {digital_scores.get('conversion', 0)}/30 | "
+            f"Tracking {digital_scores.get('tracking', 0)}/20"
         )
 
         print(
-            f"Qualificado : {lead.get('qualificado')}"
+            f"    Website Opp. : "
+            f"{lead.get('website_opportunity_score', 0)}/100"
         )
+
+        print(
+            f"    Oportunidade : "
+            f"{lead.get('opportunity_score', 0)}/100"
+        )
+
+        print(
+            f"    Confiança    : "
+            f"{lead.get('confidence', 0)}/100"
+        )
+
+        print(
+            f"    Prioridade   : "
+            f"{lead.get('prioridade') or '-'}"
+        )
+
+        print(
+            f"    Qualificado  : "
+            f"{'SIM' if lead.get('qualificado') else 'NÃO'}"
+        )
+
+        # ----------------------------------
+        # OPORTUNIDADES IDENTIFICADAS
+        # ----------------------------------
+
+        opportunities = (
+            lead.get("website_opportunities")
+            or []
+        )
+
+        if opportunities:
+
+            print(
+                "    Evidências   :"
+            )
+
+            for opportunity in opportunities[:5]:
+
+                print(
+                    f"      - {opportunity}"
+                )
 
     # ----------------------------------
-    # PERSISTÊNCIA
+    # 6. PERSISTÊNCIA
     # ----------------------------------
 
-    print("\n[5/7] Salvando dados...")
+    print("\n[5/6] Salvando resultados...")
 
     save_leads(
         leads
     )
 
-    print("[6/7] Gerando CSV...")
-
     save_csv(
         leads
     )
 
-    print("[7/7] Pipeline concluído.")
+    print("[6/6] Concluído.")
 
-    print("\n========================================")
-    print(
-        f"{len(leads)} leads processados."
+    # ----------------------------------
+    # RESUMO FINAL
+    # ----------------------------------
+
+    qualified = sum(
+        1
+        for lead in leads
+        if lead.get("qualificado")
     )
-    print("========================================\n")
+
+    print("\n" + "=" * 55)
+
+    print(
+        f"PROCESSADOS: {len(leads)} | "
+        f"QUALIFICADOS: {qualified}"
+    )
+
+    print("=" * 55 + "\n")
 
 
 if __name__ == "__main__":
