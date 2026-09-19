@@ -49,6 +49,7 @@ class LeadModel:
     # ----------------------------------
 
     digital_maturity_score: int = 0
+    website_audit_status: str = "unavailable"
 
     digital_scores: dict = field(
         default_factory=dict

@@ -2,28 +2,34 @@ def build_diagnosis(lead, confidence):
 
     problemas = []
 
+    if lead.get("tem_site") and (
+        lead.get("website_audit_status") == "unavailable"
+        or not lead.get("website_audit")
+    ):
+        problemas.append("Auditoria do website indisponível")
+
     # ----------------------------------
     # PRESENÇA DIGITAL
     # ----------------------------------
 
     if not lead.get("tem_site"):
         problemas.append(
-            "Empresa sem website"
+            "Website não identificado"
         )
 
     if not lead.get("tem_instagram"):
         problemas.append(
-            "Empresa sem Instagram"
+            "Instagram não identificado"
         )
 
     if not lead.get("tem_email"):
         problemas.append(
-            "Empresa sem e-mail"
+            "E-mail não identificado"
         )
 
     if not lead.get("tem_whatsapp"):
         problemas.append(
-            "Empresa sem WhatsApp"
+            "WhatsApp não identificado"
         )
 
     # ----------------------------------

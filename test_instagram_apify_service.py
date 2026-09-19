@@ -148,12 +148,17 @@ class InstagramApifyTests(unittest.TestCase):
                         response.json.return_value = data
                 output = StringIO()
                 with redirect_stdout(output):
-                    result = service._run_actor("apify~instagram-scraper", {})
+                    result = service._run_actor(
+                        "apify~instagram-scraper", {}, username="exemplo", stage="posts"
+                    )
                 self.assertEqual(result, [])
                 suffix = f" status={status}" if status is not None else ""
                 self.assertEqual(output.getvalue(), (
                     f"[Instagram Apify] actor=apify/instagram-scraper "
-                    f"error={category}{suffix}\n"
+                    f"error={category}{suffix} username=exemplo stage=posts\n"
+                    + ("[Instagram Apify] actor=apify/instagram-scraper "
+                       "error=empty_result status=200 username=exemplo stage=posts\n"
+                       if category == "actor_item_error" else "")
                 ))
                 for secret in ["token-ficticio", "https://", "caption-secreta",
                                "comentario-secreto", sensitive]:
@@ -172,6 +177,15 @@ class InstagramApifyTests(unittest.TestCase):
             "[Instagram Apify] actor=apify/instagram-profile-scraper "
             "error=actor_item_error status=200\n"
         ))
+        self.assertNotIn("token-ficticio", output.getvalue())
+
+    def test_stage_success_and_empty_result(self):
+        self.responses([self.profile], [])
+        output = StringIO()
+        with redirect_stdout(output):
+            service.collect_instagram_data("https://instagram.com/EXEMPLO/")
+        self.assertIn("error=success username=exemplo stage=profile", output.getvalue())
+        self.assertIn("error=empty_result username=exemplo stage=posts", output.getvalue())
         self.assertNotIn("token-ficticio", output.getvalue())
 
 

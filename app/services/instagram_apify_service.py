@@ -32,7 +32,7 @@ def _profile_username(url):
         return None
 
 
-def _run_actor(actor_id, payload):
+def _run_actor(actor_id, payload, username=None, stage=None):
     if not APIFY_TOKEN:
         return []
     response = None
@@ -43,6 +43,7 @@ def _run_actor(actor_id, payload):
         print(
             f"[Instagram Apify] actor={actor_id.replace('~', '/')} "
             f"error={category}{status_text}"
+            + (f" username={username} stage={stage}" if username else "")
         )
 
     try:
@@ -69,21 +70,28 @@ def _run_actor(actor_id, payload):
         return []
     if any(isinstance(item, dict) and item.get("error") for item in data):
         diagnose("actor_item_error")
-    return [
+    items = [
         item for item in data
         if isinstance(item, dict) and item and not item.get("error")
     ]
+    if username:
+        diagnose("success" if items else "empty_result")
+    return items
 
 
 def collect_instagram_data(instagram_url):
     """Coleta dados brutos de um perfil, sem calcular métricas ou scores."""
     result = {"profile": None, "posts": []}
     username = _profile_username(instagram_url)
-    if not username or not APIFY_TOKEN:
+    if not username:
+        return result
+    if not APIFY_TOKEN:
+        print(f"[Instagram Apify] username={username} stage=profile error=empty_result reason=token_not_configured")
         return result
 
     profiles = _run_actor(
-        "apify~instagram-profile-scraper", {"usernames": [username]}
+        "apify~instagram-profile-scraper", {"usernames": [username]},
+        username=username, stage="profile",
     )
     profile = next(
         (item for item in profiles
@@ -91,7 +99,10 @@ def collect_instagram_data(instagram_url):
          and item["username"].lower() == username), None
     )
     result["profile"] = profile
+    if profiles and profile is None:
+        print(f"[Instagram Apify] username={username} stage=profile error=empty_result")
     if profile and profile.get("private") is True:
+        print(f"[Instagram Apify] username={username} stage=posts error=empty_result reason=private_profile")
         return result
 
     posts = _run_actor(
@@ -101,6 +112,7 @@ def collect_instagram_data(instagram_url):
             "resultsType": "posts",
             "resultsLimit": MAX_POSTS,
         },
+        username=username, stage="posts",
     )
     result["posts"] = posts[:MAX_POSTS]
     return result

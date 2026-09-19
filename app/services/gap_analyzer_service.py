@@ -28,6 +28,12 @@ def analyze_gaps(lead):
 
         return lead
 
+    if lead.get("website_audit_status") == "unavailable" or not audit:
+        lead["website_gaps"] = []
+        lead["website_opportunities"] = []
+        lead["gaps"] = []
+        return lead
+
     # ----------------------------------
     # ESTRUTURA
     # ----------------------------------

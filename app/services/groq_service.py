@@ -82,6 +82,16 @@ Responda SOMENTE com JSON válido:
 
 def analyze_lead(lead):
 
+    if lead.get("tem_site") and (
+        lead.get("website_audit_status") == "unavailable"
+        or not lead.get("website_audit")
+    ):
+        lead["problema_principal"] = "Auditoria do website indisponível."
+        lead["abordagem"] = (
+            "Validar o website antes de apontar deficiências técnicas."
+        )
+        return lead
+
     website_opportunities = (
         lead.get("website_opportunities")
         or []

@@ -113,6 +113,8 @@ def enrich_lead(lead):
         "website"
     )
 
+    lead["website_audit_status"] = "unavailable" if website else "no_site"
+
     if not website:
         return lead
 
@@ -465,6 +467,8 @@ def enrich_lead(lead):
             lead,
             home_html
         )
+
+        lead["website_audit_status"] = "completed"
 
     except Exception as e:
 
