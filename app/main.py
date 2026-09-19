@@ -35,6 +35,38 @@ from app.services.qualification_service import (
 from app.services.supabase_service import save_leads
 
 from app.services.csv_service import save_csv
+from app.services.instagram_apify_service import (
+    _profile_username,
+    collect_instagram_data,
+)
+from app.services.instagram_intelligence_service import (
+    extract_instagram_metrics,
+    calculate_instagram_score,
+)
+
+
+def enrich_instagram_leads(leads):
+    cache = {}
+    for lead in leads:
+        username = _profile_username(lead.get("instagram"))
+        if not username:
+            lead.update(extract_instagram_metrics(None, []))
+        else:
+            lead["tem_instagram"] = True
+            if username not in cache:
+                try:
+                    raw = collect_instagram_data(
+                        f"https://www.instagram.com/{username}/"
+                    )
+                except Exception:
+                    # Não imprimir a exceção: pode conter credenciais.
+                    raw = {"profile": None, "posts": []}
+                cache[username] = extract_instagram_metrics(
+                    raw["profile"], raw["posts"]
+                )
+            lead.update(cache[username])
+        calculate_instagram_score(lead)
+    return leads
 
 
 def main():
@@ -86,6 +118,8 @@ def main():
     leads = enrich_leads(
         leads
     )
+
+    leads = enrich_instagram_leads(leads)
 
     # ----------------------------------
     # 4. INTELIGÊNCIA COMERCIAL

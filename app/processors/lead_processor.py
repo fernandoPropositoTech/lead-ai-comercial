@@ -1,6 +1,7 @@
 from dataclasses import asdict
 
 from app.models.lead_model import LeadModel
+from app.services.instagram_apify_service import _profile_username
 
 from app.services.enrichment.website_validator import (
     validate_website
@@ -36,6 +37,7 @@ def process_leads(data):
         print(f"LEAD {index}")
 
         raw_website = item.get("website")
+        instagram = raw_website if _profile_username(raw_website) else None
 
         print(
             f"RAW WEBSITE       : {raw_website}"
@@ -68,6 +70,8 @@ def process_leads(data):
             empresa=item.get("title"),
             telefone=item.get("phone"),
             website=website,
+            instagram=instagram,
+            tem_instagram=instagram is not None,
 
             cidade=item.get("city"),
             estado=estado,

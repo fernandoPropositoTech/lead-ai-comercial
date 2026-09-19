@@ -198,7 +198,7 @@ def enrich_lead(lead):
         # ACUMULADORES
         # ----------------------------------
 
-        socials = {}
+        socials = {"instagram": lead.get("instagram")} if lead.get("instagram") else {}
         contacts = {}
 
         email_same_domain_found = False
