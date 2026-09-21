@@ -13,13 +13,6 @@ EMAIL_PATTERN = (
 )
 
 
-PHONE_PATTERN = (
-    r"(?:\+55\s?)?"
-    r"(?:\(?\d{2}\)?\s?)?"
-    r"\d{4,5}[-\s]?\d{4}"
-)
-
-
 def extract_structured_data(html):
 
     soup = BeautifulSoup(
@@ -271,33 +264,6 @@ def extract_structured_data(html):
 
                 data["email"] = (
                     email.strip()
-                )
-
-                break
-
-    # ----------------------------------
-    # FALLBACK REGEX - TELEFONE
-    # ----------------------------------
-
-    if not data["telefone"]:
-
-        phones = re.findall(
-            PHONE_PATTERN,
-            html
-        )
-
-        for raw_phone in phones:
-
-            normalized = (
-                normalize_phone(
-                    raw_phone
-                )
-            )
-
-            if normalized:
-
-                data["telefone"] = (
-                    normalized
                 )
 
                 break

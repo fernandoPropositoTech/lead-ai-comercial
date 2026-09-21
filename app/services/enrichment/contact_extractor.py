@@ -1,5 +1,7 @@
 import re
 
+from bs4 import BeautifulSoup
+
 from app.services.enrichment.email_validator import (
     validate_email
 )
@@ -11,13 +13,6 @@ from app.services.enrichment.email_score import (
 
 EMAIL_PATTERN = (
     r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
-)
-
-
-PHONE_PATTERN = (
-    r"(?:\+55\s?)?"
-    r"(?:\(?\d{2}\)?\s?)?"
-    r"\d{4,5}[-\s]?\d{4}"
 )
 
 
@@ -172,40 +167,13 @@ def extract_contacts(html: str):
 
             break
 
-    # ----------------------------------
-    # REMOVE LINKS DE WHATSAPP
-    # ANTES DE PROCURAR TELEFONE
-    # ----------------------------------
-
-    html_without_whatsapp_links = re.sub(
-        r"https?://wa\.me/\d+",
-        "",
-        html,
-        flags=re.IGNORECASE
-    )
-
-    html_without_whatsapp_links = re.sub(
-        r"https?://api\.whatsapp\.com/send\?phone=\d+",
-        "",
-        html_without_whatsapp_links,
-        flags=re.IGNORECASE
-    )
-
-    html_without_whatsapp_links = re.sub(
-        r"whatsapp://send[^\s\"']*",
-        "",
-        html_without_whatsapp_links,
-        flags=re.IGNORECASE
-    )
-
-    # ----------------------------------
-    # TELEFONE
-    # ----------------------------------
-
-    phone_matches = re.findall(
-        PHONE_PATTERN,
-        html_without_whatsapp_links
-    )
+    # Telefones somente de links expl?citos de contato.
+    soup = BeautifulSoup(html, "html.parser")
+    phone_matches = [
+        link["href"].strip()[4:].split(";", 1)[0].split("?", 1)[0]
+        for link in soup.find_all("a", href=True)
+        if link["href"].strip().lower().startswith("tel:")
+    ]
 
     print("\n==============================")
     print("TELEFONES ENCONTRADOS")
