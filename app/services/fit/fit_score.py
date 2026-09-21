@@ -1,3 +1,6 @@
+import re
+import unicodedata
+
 from app.config.business_rules import (
     PRIORITY_SEGMENTS,
     FIT_SEGMENT_POINTS,
@@ -6,6 +9,27 @@ from app.config.business_rules import (
     FIT_CONTACT_POINTS,
     FIT_DIGITAL_STRUCTURE_POINTS,
 )
+
+
+def normalize_segment_text(value):
+    text = unicodedata.normalize("NFD", (value or "").lower())
+    text = "".join(char for char in text if not unicodedata.combining(char))
+    return " ".join(text.split())
+
+
+def matches_segment_fallback(category, company):
+    if normalize_segment_text(category) not in {
+        "esteticista", "centro de saude e beleza",
+    }:
+        return False
+    name = normalize_segment_text(company)
+    return any(
+        re.search(r"(?<!\w)" + re.escape(phrase) + r"(?!\w)", name)
+        for phrase in (
+            "clinica de estetica", "clinica estetica",
+            "biomedicina estetica", "estetica avancada",
+        )
+    )
 
 
 def calculate_fit_score(lead):
@@ -27,6 +51,11 @@ def calculate_fit_score(lead):
         segment in categoria
         for segment in PRIORITY_SEGMENTS
     )
+
+    if not is_priority_segment:
+        is_priority_segment = matches_segment_fallback(
+            categoria, lead.get("empresa")
+        )
 
     if is_priority_segment:
         score += FIT_SEGMENT_POINTS
